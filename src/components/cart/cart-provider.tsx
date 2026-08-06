@@ -33,28 +33,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  // Carrega o carrinho persistido uma vez após a montagem.
+  // Load persisted cart once on mount.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    const frame = requestAnimationFrame(() => {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) setItems(JSON.parse(raw));
       } catch {
-        // Mantém o carrinho vazio quando o armazenamento estiver indisponível.
+        /* ignore */
       }
       setHydrated(true);
-    }, 0);
+    });
 
-    return () => window.clearTimeout(timer);
+    return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Persiste mudanças somente após carregar o estado salvo.
+  // Persist on change (after hydration to avoid clobbering).
   useEffect(() => {
     if (!hydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
-      // Mantém o carrinho em memória quando a persistência falhar.
+      /* ignore */
     }
   }, [items, hydrated]);
 
