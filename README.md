@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# THPARFUMS
 
-## Getting Started
+Dark-luxury perfume storefront + admin. **Next.js 16 · Tailwind v4 · Supabase.**
 
-First, run the development server:
+Showcase-first but **cart-ready**: prices, offers, a localStorage cart and an interim
+**WhatsApp checkout**. Swap in a payment gateway later without rewriting the cart.
+
+![brand](public/brand/brand-mockups.jpg)
+
+## Run it (zero setup)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+With no Supabase keys, the site runs on bundled **seed data** (16 perfumes). Perfect for
+a first look or a quick share via a tunnel.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Enable the database + admin (Supabase)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the **SQL editor**, run `supabase/schema.sql`, then `supabase/seed.sql`.
+3. **Authentication → Users → Add user**: create your admin (email + password).
+4. Copy `.env.example` → `.env.local` and fill:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Settings → API)
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
+   - `ADMIN_EMAILS` (the email from step 3)
+   - `NEXT_PUBLIC_WHATSAPP_NUMBER` (digits only, e.g. `5511999998888`)
+5. Restart `npm run dev`. Log in at **`/admin`** to manage products, images and settings.
 
-## Learn More
+> Seed image URLs point at `/products/*.jpg` shipped in `public/`, so the seed needs no
+> uploads. Images you add in the admin are uploaded to Supabase Storage.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy (Vercel free subdomain)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm i -g vercel
+vercel            # link/create project
+# add the same env vars in Vercel → Project → Settings → Environment Variables
+vercel --prod
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You get a shareable `https://<project>.vercel.app` that works on phone and desktop.
+Point a custom domain at it later from Vercel → Domains.
 
-## Deploy on Vercel
+## Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/(store)/        public storefront (home, /perfumes, /perfumes/[slug], /sobre)
+  app/admin/          auth-gated admin (dashboard, product CRUD, settings) + server actions
+  components/         site/ product/ cart/ ui/ admin/
+  lib/                data access, supabase clients, formatting, whatsapp, types
+  data/seed.ts        canonical fallback catalog (also generates supabase/seed.sql)
+supabase/             schema.sql + generated seed.sql
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Next steps (not built)
+
+Real payment/checkout, shipping/CEP calculator, installments, stock control, reviews,
+custom domain + production hosting.
